@@ -1,0 +1,40 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+    branches:
+      - master
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            PubProfile: SingleFile-R2R-Win64
+            PubSubdir: win
+            ArcName: Windows
+          - os: ubuntu-latest
+            PubProfile: SingleFile-R2R-Linux64
+            PubSubdir: linux
+            ArcName: Linux
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v2
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+      - name: Build
+        run: dotnet publish TaigaUpdateGithubProfile.csproj -p:PublishProfile=${{ matrix.PubProfile }}
+      - name: Upload net461
+        uses: actions/upload-artifact@v2
+        with:
+          name: TaigaUpdater-${{ matrix.ArcName }}
+          path: bin/Release/net5.0/publish/${{ matrix.PubSubdir }}
