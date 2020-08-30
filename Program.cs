@@ -83,7 +83,7 @@ static int PrintHelp()
     Console.WriteLine("Details:");
     Console.WriteLine("    <template>   The Handlebars template file to use to generate each update.");
     Console.WriteLine("                 In the template, you have access to the following properties:");
-    Console.WriteLine("                   - Title         = The show title.");
+    Console.WriteLine("                   - Title          = The show title.");
     Console.WriteLine("                   - Url            = The show URL. This will point to a tracker like AniList.");
     Console.WriteLine("                   - ImageUrl       = The show's image URL. This will point be the show's cover art.");
     Console.WriteLine("                   - TotalEps       = The total number of episodes in the show.");
