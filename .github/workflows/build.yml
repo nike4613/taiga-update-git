@@ -35,6 +35,8 @@ jobs:
           dotnet-version: '5.0.100-preview.8.20417.9'
       - name: Build
         run: dotnet publish TaigaUpdateGithubProfile.csproj -p:PublishProfile=${{ matrix.PubProfile }}
+      - name: Delete git2 PDB
+        run: rm bin/Release/net5.0/publish/${{ matrix.PubSubdir }}/git2*
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
