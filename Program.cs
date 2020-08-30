@@ -14,17 +14,12 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
-/* Taiga Body format:
- * {"title":"%title%","url":"%animeurl%","image":"%image%","total_eps":%total%,"watched_eps":%watched%,"rewatching":$if(%rewatching%,true,false),"current_ep":{"id":%episode%,"title":"%name%"}}
-*/
-
 
 var logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .Enrich.WithExceptionDetails()
     .Enrich.WithDemystifiedStackTraces()
     .WriteTo.Async(c => c.Console())
-    .WriteTo.Async(c => c.File("log.txt"))
     .CreateLogger();
 
 #region Argument Processing
@@ -79,6 +74,10 @@ static int PrintHelp()
 {
     var name = Environment.GetCommandLineArgs()[0];
     Console.WriteLine($"Usage: {name} <template> <target> <repo> [<remote>]");
+    Console.WriteLine();
+    Console.WriteLine("Description:");
+    Console.WriteLine("    Automatically updates and pushes a git repository with currently watching information");
+    Console.WriteLine("    from Taiga (https://taiga.moe/)");
     Console.WriteLine();
     Console.WriteLine("Details:");
     Console.WriteLine("    <template>   The Handlebars template file to use to generate each update.");
@@ -163,6 +162,19 @@ string gitPath;
 const int ListenPort = 9797;
 var address = $"http://localhost:{ListenPort}/";
 
+const string TaigaFormat = "{" +
+    "\"title\":\"%title%\"," +
+    "\"url\":\"%animeurl%\"," +
+    "\"image\":\"%image%\"," +
+    "\"total_eps\":%total%," +
+    "\"watched_eps\":%watched%," +
+    "\"rewatching\":$if(%rewatching%,true,false)," +
+    "\"current_ep\":{" +
+        "\"id\":%episode%," +
+        "\"title\":\"%name%\"" +
+    "}" +
+"}";
+
 using var runSource = new CancellationTokenSource();
 Console.CancelKeyPress += (_, args) =>
 {
@@ -176,6 +188,11 @@ listener.Prefixes.Add(address);
 listener.Start();
 
 logger.Information("Listening on {Address}", address);
+logger.Information("");
+logger.Information("In Taiga, go to Settings -> Sharing -> HTTP and set 'URL' to {Url}", address + "taiga");
+logger.Information("Then, click on 'Edit format string' and enter the following exactly:");
+logger.Information("{TaigaFormat}", TaigaFormat);
+logger.Information("");
 
 try
 {
