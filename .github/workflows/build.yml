@@ -35,7 +35,7 @@ jobs:
           dotnet-version: '5.0.100-preview.8.20417.9'
       - name: Build
         run: dotnet publish TaigaUpdateGithubProfile.csproj -p:PublishProfile=${{ matrix.PubProfile }}
-      - name: Upload net461
+      - name: Upload
         uses: actions/upload-artifact@v2
         with:
           name: TaigaUpdater-${{ matrix.ArcName }}
