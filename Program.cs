@@ -1,6 +1,8 @@
 ﻿using HandlebarsDotNet;
 using LibGit2Sharp;
 using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 using Serilog.Exceptions;
 using System;
 using System.Diagnostics;
@@ -14,9 +16,18 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
+const string DebugLogVar = "TAIGA_DEBUG";
+var showDebug =
+#if DEBUG
+    true;
+#else
+    Environment.GetEnvironmentVariable(DebugLogVar) != null;
+#endif
+
+var controlSwitch = new LoggingLevelSwitch(showDebug ? LogEventLevel.Debug : LogEventLevel.Information);
 
 var logger = new LoggerConfiguration()
-    .MinimumLevel.Debug()
+    .MinimumLevel.ControlledBy(controlSwitch)
     .Enrich.WithExceptionDetails()
     .Enrich.WithDemystifiedStackTraces()
     .WriteTo.Async(c => c.Console())
@@ -100,6 +111,7 @@ static int PrintHelp()
     Console.WriteLine();
     Console.WriteLine("    <remote>     The remote to push to.");
     Console.WriteLine();
+    Console.WriteLine($"You can enable debug logging by setting the {DebugLogVar} environment variable.");
     return 1;
 }
 #endregion
@@ -225,7 +237,7 @@ async Task SafeHandleRequest(ILogger logger, HttpListenerContext context, Cancel
 
     try
     {
-        logger.Information("{Method} {Url}", req.HttpMethod, req.Url);
+        logger.Information("{Method} {Url} from {Source}", req.HttpMethod, req.Url, req.UserAgent);
         await HandleRequest(logger, req, resp, token);
     }
     catch (Exception e)
@@ -238,9 +250,6 @@ async Task SafeHandleRequest(ILogger logger, HttpListenerContext context, Cancel
 
 async Task HandleRequest(ILogger logger, HttpListenerRequest req, HttpListenerResponse resp, CancellationToken token)
 {
-    logger.Debug("User Host: {UserHostName}", req.UserHostName);
-    logger.Debug("User Agent: {UserAgent}", req.UserAgent);
-
     if (req.HttpMethod == "POST" && req.Url.PathAndQuery == "/taiga")
     {
         try
@@ -249,7 +258,7 @@ async Task HandleRequest(ILogger logger, HttpListenerRequest req, HttpListenerRe
 
             info = info.Decoded();
 
-            logger.Information("Info: {@TaigaInfo}", info);
+            logger.Debug("Info: {@TaigaInfo}", info);
 
             using (var file = targetFile.Open(FileMode.Create, FileAccess.Write))
             using (var writer = new StreamWriter(file, Encoding.UTF8))
