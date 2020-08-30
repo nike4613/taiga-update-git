@@ -75,7 +75,7 @@ if (!Directory.Exists(Path.Combine(repoPath, ".git")))
     }
 }
 
-var remote = "origin";
+string? remote = null;
 if (args.Length > 3)
 {
     remote = args[3];
@@ -282,7 +282,8 @@ async Task HandleRequest(ILogger logger, HttpListenerRequest req, HttpListenerRe
                 RedirectStandardError = true
             };
             proc.StartInfo.ArgumentList.Add("push");
-            proc.StartInfo.ArgumentList.Add(remote);
+            if (remote != null)
+                proc.StartInfo.ArgumentList.Add(remote);
 
             proc.OutputDataReceived += (_, args) =>
             {
