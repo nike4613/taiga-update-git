@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "TaigaUpdateGithubProfile": {
+      "commandName": "Project",
+      "commandLineArgs": ".\\template.md .\\target_repo\\readme.md .\\target_repo"
+    }
+  }
+}
