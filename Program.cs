@@ -250,11 +250,18 @@ async Task SafeHandleRequest(ILogger logger, HttpListenerContext context, Cancel
 
 async Task HandleRequest(ILogger logger, HttpListenerRequest req, HttpListenerResponse resp, CancellationToken token)
 {
-    if (req.HttpMethod == "POST" && req.Url.PathAndQuery == "/taiga")
+    if (req.HttpMethod == "POST" && req.Url?.PathAndQuery == "/taiga")
     {
         try
         {
             var info = await JsonSerializer.DeserializeAsync<TaigaInfo>(req.InputStream, cancellationToken: token);
+
+            if (info == null)
+            {
+                resp.StatusCode = 400;
+                resp.OutputStream.Write(Encoding.UTF8.GetBytes("Body not a valid JSON object"));
+                return;
+            }
 
             info = info.Decoded();
 
