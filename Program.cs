@@ -138,6 +138,7 @@ string gitPath;
         .Select(p => new DirectoryInfo(p))
         .Where(d => d.Exists)
         .SelectMany(d => d.EnumerateFiles("git*"))
+        .Where(f => Path.GetFileNameWithoutExtension(f.Name) == "git")
         .FirstOrDefault(f => 
         {
             try
